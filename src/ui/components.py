@@ -72,6 +72,63 @@ class TagInputField(Frame):
         self.entry.config(fg="gray")
 
 
+class AutoTagField(Frame):
+    """Component for adding a tag to all images at once"""
+    
+    def __init__(self, master=None, command=None, width=40, **kwargs):
+        super().__init__(master, **kwargs)
+        
+        # Apply a slight border and padding for visual separation
+        self.config(pady=5, padx=2, bd=1, relief=tk.GROOVE)
+        
+        # Field label
+        self.title_label = Label(self, text="Auto-Tag All Images", 
+                              font=("Arial", 10, "bold"), fg="#333333")
+        self.title_label.pack(anchor=tk.W, padx=5, pady=3)
+        
+        # Container for the entry and button
+        self.input_frame = Frame(self)
+        self.input_frame.pack(fill=tk.X, expand=True, padx=5)
+        
+        # Label
+        self.label = Label(self.input_frame, text="Tag:", padx=5)
+        self.label.pack(side=tk.LEFT)
+        
+        # Entry field
+        self.tag_var = tk.StringVar()
+        self.entry = Entry(self.input_frame, textvariable=self.tag_var, 
+                          width=width, font=("Arial", 10))
+        self.entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+        
+        # Apply button
+        self.apply_button = Button(self.input_frame, text="Apply to All", 
+                                 command=self._apply_tag,
+                                 bg="#FFA500", fg="white",
+                                 font=("Arial", 9, "bold"), padx=5)
+        self.apply_button.pack(side=tk.RIGHT, padx=5)
+        
+        # Store the callback function
+        self.command = command
+        
+        # Help text
+        self.help_label = Label(self, 
+                            text="This will add the tag to ALL images in the folder", 
+                            font=("Arial", 8), fg="#555555")
+        self.help_label.pack(anchor=tk.W, padx=5, pady=2)
+        
+    def _apply_tag(self):
+        """Execute the command callback with the current tag"""
+        tag = self.tag_var.get().strip()
+        if tag and self.command:
+            try:
+                success = self.command(tag)
+                if success:
+                    self.tag_var.set("")  # Clear on success
+            except Exception as e:
+                print(f"Error applying tag: {str(e)}")
+                # Don't clear the tag field if there was an error
+
+
 class NavigationButton(Button):
     """Enhanced navigation button with styling"""
     
@@ -97,11 +154,11 @@ class NavigationButton(Button):
     
     def _on_enter(self, event):
         """Mouse enter effect"""
-        self.config(bg="#d1d1d1")
+        self.config(bg="#d1d1d1" if self.cget("bg") == "#e1e1e1" else self.cget("bg").replace("#", "#d"))
     
     def _on_leave(self, event):
         """Mouse leave effect"""
-        self.config(bg="#e1e1e1")
+        self.config(bg="#e1e1e1" if self.cget("bg") == "#d1d1d1" else self.cget("bg").replace("d", ""))
 
 
 class SaveButton(Button):

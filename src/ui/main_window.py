@@ -1,18 +1,19 @@
 import os
 import tkinter as tk
-from tkinter import Label, StringVar, Frame
+from tkinter import Label, StringVar, Frame, messagebox
 from PIL import Image, ImageTk
 
 # Change relative imports to absolute imports
 from src.image_loader import ImageLoader
 from src.tag_manager import TagManager
-from src.ui.components import TagInputField, NavigationButton, SaveButton
+from src.ui.components import TagInputField, NavigationButton, SaveButton, AutoTagField
 
 class MainWindow:
     def __init__(self, master):
         self.master = master
         self.master.title("Amalthea - Image Tagging Software")
-        self.master.geometry("800x600")
+        self.master.geometry("900x700")  # Increased window size
+        self.master.minsize(800, 650)    # Set minimum window size
         
         # Main frame
         self.frame = Frame(self.master)
@@ -45,18 +46,34 @@ class MainWindow:
         self.tag_input = TagInputField(self.frame, textvariable=self.tag_var, width=50)
         self.tag_input.pack(fill=tk.X, pady=5)
 
+        # Auto-tag area - New component
+        self.autotag_frame = Frame(self.frame)
+        self.autotag_frame.pack(fill=tk.X, pady=5)
+        self.autotag_field = AutoTagField(self.autotag_frame, command=self.apply_auto_tag)
+        self.autotag_field.pack(fill=tk.X, expand=True)
+
         # Navigation buttons
         self.button_frame = Frame(self.frame)
         self.button_frame.pack(fill=tk.X, pady=10)
-        
+
+        # Use a grid layout for better control
+        self.button_frame.columnconfigure(0, weight=1)
+        self.button_frame.columnconfigure(1, weight=1)
+        self.button_frame.columnconfigure(2, weight=1)
+        self.button_frame.columnconfigure(3, weight=1)
+
         self.previous_button = NavigationButton(self.button_frame, text="Previous Image", command=self.previous_image)
-        self.previous_button.pack(side=tk.LEFT, padx=5)
-        
+        self.previous_button.grid(row=0, column=0, padx=5, sticky="w")
+
         self.save_button = SaveButton(self.button_frame, text="Save Tags", command=self.save_tags)
-        self.save_button.pack(side=tk.LEFT, padx=5)
-        
+        self.save_button.grid(row=0, column=1, padx=5, sticky="w")
+
+        self.delete_button = NavigationButton(self.button_frame, text="Delete Tags", 
+                                             command=self.delete_tags, bg="#f44336", fg="white")
+        self.delete_button.grid(row=0, column=2, padx=5, sticky="w")
+
         self.next_button = NavigationButton(self.button_frame, text="Next Image", command=self.next_image)
-        self.next_button.pack(side=tk.RIGHT, padx=5)  # Changed to RIGHT for better layout
+        self.next_button.grid(row=0, column=3, padx=5, sticky="e")
 
         # Status message
         self.status_var = StringVar()
@@ -65,6 +82,14 @@ class MainWindow:
 
         # Load images and display the first one
         self.load_images()
+
+        # After all UI elements are created, update the window size
+        self.master.update_idletasks()  # Force geometry calculation
+        
+        # Calculate and set a more appropriate window size
+        required_height = self.frame.winfo_reqheight() + 40  # Add some extra padding
+        required_width = self.frame.winfo_reqwidth() + 40    # Add some extra padding
+        self.master.geometry(f"{max(required_width, 800)}x{max(required_height, 650)}")
 
     def load_images(self):
         """Load all images from the images directory."""
@@ -113,15 +138,19 @@ class MainWindow:
 
     def next_image(self):
         """Navigate to the next image."""
-        if self.images:
-            self.current_image_index = (self.current_image_index + 1) % len(self.images)
-            self.show_image()
+        if not self.images:
+            return
+        
+        self.current_image_index = (self.current_image_index + 1) % len(self.images)
+        self.show_image()
 
     def previous_image(self):
         """Navigate to the previous image."""
-        if self.images:
-            self.current_image_index = (self.current_image_index - 1) % len(self.images)
-            self.show_image()
+        if not self.images:
+            return
+        
+        self.current_image_index = (self.current_image_index - 1) % len(self.images)
+        self.show_image()
 
     def save_tags(self):
         """Save the current tags for the displayed image."""
@@ -133,3 +162,48 @@ class MainWindow:
                 self.status_var.set(f"Tags saved for {os.path.basename(self.current_image_path)}")
             else:
                 self.status_var.set("Error saving tags")
+
+    def delete_tags(self):
+        """Delete the tags for the current image."""
+        if self.images and self.current_image_path:
+            if messagebox.askyesno("Confirm Delete", "Are you sure you want to delete the tags for this image?"):
+                success = self.tag_manager.delete_tags(self.current_image_path)
+                if success:
+                    self.tag_var.set("")  # Clear the tag input field
+                    self.status_var.set(f"Tags deleted for {os.path.basename(self.current_image_path)}")
+                else:
+                    self.status_var.set("Error deleting tags")
+    
+    def apply_auto_tag(self, tag):
+        """Apply the specified tag to all images."""
+        if not self.images or not tag:
+            self.status_var.set("No images to tag or no tag specified")
+            return False
+        
+        success_count = 0
+        current_image_tags = None  # Store tags for current image to update UI
+        
+        for image_path in self.images:
+            # Get existing tags
+            existing_tags = self.tag_manager.load_tags(image_path)
+            
+            # Add the new tag if it's not already present
+            tags_list = [t.strip() for t in existing_tags.split(',') if t.strip()]
+            if tag not in tags_list:
+                tags_list.append(tag)
+                
+                # Save the updated tags
+                new_tags = ', '.join(tags_list)
+                if self.tag_manager.save_tags(image_path, new_tags):
+                    success_count += 1
+                    
+                    # If this is the current image, store its tags
+                    if image_path == self.current_image_path:
+                        current_image_tags = new_tags
+        
+        # Update the current image's tags in the UI without disturbing navigation state
+        if current_image_tags is not None:
+            self.tag_var.set(current_image_tags)
+        
+        self.status_var.set(f"Tag '{tag}' applied to {success_count} of {len(self.images)} images")
+        return success_count > 0

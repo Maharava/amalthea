@@ -18,7 +18,8 @@ class ImageLoader:
         Load all image files from the specified folder.
         Returns a list of full paths to the image files.
         """
-        image_extensions = ('*.png', '*.jpg', '*.jpeg', '*.gif', '*.bmp')
+        # Define valid image extensions directly
+        valid_extensions = ('.png', '.jpg', '.jpeg', '.gif', '.bmp')
         images = []
         
         # Ensure the image directory exists
@@ -30,19 +31,33 @@ class ImageLoader:
                 print(f"Error creating image directory: {e}")
                 return images
         
-        # Load all images with supported extensions
-        for ext in image_extensions:
-            image_paths = glob(os.path.join(self.image_folder, ext))
-            images.extend(image_paths)
+        # Get all files in the directory
+        try:
+            all_files = os.listdir(self.image_folder)
             
-            # Also check for uppercase extensions
-            image_paths = glob(os.path.join(self.image_folder, ext.upper()))
-            images.extend(image_paths)
-        
-        # Sort images alphabetically for consistent navigation
-        images.sort()
+            # Filter for image files based on extension
+            for filename in all_files:
+                ext = os.path.splitext(filename)[1].lower()
+                if ext in valid_extensions:
+                    full_path = os.path.join(self.image_folder, filename)
+                    if os.path.isfile(full_path):  # Double check it's a file
+                        images.append(full_path)
+            
+            # Sort images alphabetically for consistent navigation
+            images.sort()
+            
+            print(f"Found {len(images)} images in {self.image_folder}")
+            
+        except Exception as e:
+            print(f"Error loading images: {e}")
         
         return images
+        
+    def _is_image_file(self, filepath):
+        """Check if the file is actually an image file based on extension."""
+        valid_extensions = ('.png', '.jpg', '.jpeg', '.gif', '.bmp', 
+                           '.PNG', '.JPG', '.JPEG', '.GIF', '.BMP')
+        return os.path.isfile(filepath) and os.path.splitext(filepath)[1].lower() in [ext.lower() for ext in valid_extensions]
 
     def get_next_image(self, current_image_path, images):
         """
