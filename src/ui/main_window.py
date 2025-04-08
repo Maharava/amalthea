@@ -16,6 +16,14 @@ class MainWindow:
         self.master.geometry("900x700")  # Increased window size
         self.master.minsize(800, 650)    # Set minimum window size
         
+        # Set window icon from resources folder
+        try:
+            icon_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(
+                        os.path.abspath(__file__)))), "resources", "icon.ico")
+            self.master.iconbitmap(icon_path)
+        except Exception as e:
+            print(f"Error setting window icon: {str(e)}")
+        
         # Main frame
         self.frame = Frame(self.master)
         self.frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
@@ -157,21 +165,47 @@ class MainWindow:
             
             # If icon still not found, use a placeholder
             if not os.path.exists(icon_path):
-                # Create a gradient placeholder image with Amalthea text
-                img = Image.new('RGB', (400, 300), color=(240, 240, 245))
+                # Create a placeholder image with proper dimensions
+                img = Image.new('RGB', (512, 512), color=(240, 240, 245))
                 self.app_icon_photo = ImageTk.PhotoImage(img)
                 return
                 
-            # Load and resize the icon
+            # Load the icon
             icon_img = Image.open(icon_path)
-            # Scale to a reasonable size if needed
-            icon_img = icon_img.resize((400, 300), Image.LANCZOS)
+            
+            # Calculate dimensions while preserving aspect ratio
+            # Target size is 512x512, but maintain aspect ratio
+            max_size = 512
+            original_width, original_height = icon_img.size
+            
+            # Calculate new dimensions preserving aspect ratio
+            if original_width >= original_height:
+                new_width = max_size
+                new_height = int(original_height * (max_size / original_width))
+            else:
+                new_height = max_size
+                new_width = int(original_width * (max_size / original_height))
+            
+            # Resize with proper aspect ratio
+            icon_img = icon_img.resize((new_width, new_height), Image.LANCZOS)
+            
+            # If needed, create a square backdrop for the icon
+            if new_width != new_height:
+                # Create a square backdrop
+                backdrop = Image.new('RGBA', (max_size, max_size), (240, 240, 245, 0))
+                # Calculate position to center the icon
+                paste_x = (max_size - new_width) // 2
+                paste_y = (max_size - new_height) // 2
+                # Paste the icon centered on the backdrop
+                backdrop.paste(icon_img, (paste_x, paste_y), icon_img if icon_img.mode == 'RGBA' else None)
+                icon_img = backdrop
+            
             self.app_icon_photo = ImageTk.PhotoImage(icon_img)
             
         except Exception as e:
             print(f"Error loading application icon: {str(e)}")
-            # Create a fallback image
-            img = Image.new('RGB', (400, 300), color=(240, 240, 245))
+            # Create a fallback image with proper dimensions
+            img = Image.new('RGB', (512, 512), color=(240, 240, 245))
             self.app_icon_photo = ImageTk.PhotoImage(img)
 
     def load_images(self):

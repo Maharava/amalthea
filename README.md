@@ -1,80 +1,151 @@
-# Amalthea Image Tagging Software
+==================================================
+AMALTHEA IMAGE TAGGING SOFTWARE - USER GUIDE
+==================================================
 
-![Amalthea Icon](icon.ico)
+Welcome to Amalthea, a powerful yet simple image tagging tool for organizing 
+and cataloging your image collections.
 
-Amalthea is a user-friendly image tagging software that allows you to effortlessly organize and manage your image collections. With Amalthea, you can load images from a specified directory, view them, and add custom tags to each image. These tags are saved in a separate text file associated with each image, making it easy to search, filter, and retrieve images based on their metadata.
+--------------------------------------------------
+INSTALLATION
+--------------------------------------------------
 
-## Features
+1. REQUIREMENTS:
+   - Python 3.6 or higher with tkinter (usually included in standard installation)
+   - PIL/Pillow package for image processing
 
-*   **Image Loading:** Load images from a specified directory. The default directory is the `/images` folder in the project root.
-*   **Image Navigation:** Easily navigate between images using the "Previous Image" and "Next Image" buttons.
-*   **Tagging:** Add custom tags to each image using a simple text input field. Tags can be comma-separated or space-separated.
-*   **Tag Saving:** Save tags to a `.txt` file with the same name as the image file.
-*   **Supported Image Formats:** Amalthea supports a wide range of image formats, including PNG, JPG, JPEG, GIF, and BMP.
-*   **Automatic Image Directory Creation:** If the `/images` directory does not exist, Amalthea will automatically create it.
+2. INSTALLATION STEPS:
+   a) Download or clone the Amalthea repository
+   b) Make sure Python is installed and in your system PATH
+   c) Run the setup.bat file to install required dependencies
+      OR use pip manually: pip install -r requirements.txt
 
-## Installation
+3. FIRST-TIME SETUP:
+   a) Run create_shortcut.bat to create a desktop shortcut
+      - This will create "Amalthea.lnk" in the root directory
+      - You can move this shortcut anywhere on your system
+   b) The shortcut uses the app icon and launches without showing command windows
+   c) The "images" folder will be created automatically when needed
 
-1.  **Clone the repository:**
+--------------------------------------------------
+LAUNCHING AMALTHEA
+--------------------------------------------------
 
-    ```bash
-    git clone <repository-url>
-    ```
-2.  **Navigate to the project directory:**
+There are three ways to start Amalthea:
 
-    ```bash
-    cd amalthea
-    ```
-3.  **Install the required dependencies:**
+1. RECOMMENDED: Use the shortcut created by running create_shortcut.bat
+   - This gives the cleanest experience with proper icon in taskbar
+   - No command windows will appear in the background
 
-    ```bash
-    pip install -r requirements.txt
-    ```
+2. Run the run.bat file directly
+   - This shows a command window while running
+   - Automatically checks and installs dependencies if needed
+   - Creates the images folder if it doesn't exist
 
-## Usage
+3. Advanced/manual startup: 
+   - Navigate to the amalthea directory in a command prompt
+   - Run: python src/main.py
 
-### Windows Users
+--------------------------------------------------
+USING AMALTHEA
+--------------------------------------------------
 
-Simply double-click the `run.bat` file to start Amalthea. The batch file will automatically check for and install required dependencies if needed.
+MAIN INTERFACE:
 
-### Manual Start
+* IMAGE DISPLAY: Shows the current image in your collection
+  - When no images are loaded, shows the Amalthea icon
 
-1.  **Place your images in the `/images` folder.** This folder is created automatically on the first run if it doesn't exist.
-2.  **Run the application:**
+* FILENAME: Displays the name of the current image file
 
-    ```bash
-    python src/main.py
-    ```
-3.  **Use the "Previous Image" and "Next Image" buttons to navigate between images.**
-4.  **Enter tags in the text input field (comma or space separated).**
-5.  **Click the "Save Tags" button to store the tags.**
+* PNG METADATA: Shows any embedded metadata in PNG files
+  - Particularly useful for AI-generated images with embedded prompts
 
-## Directory Structure
+* AUTO-TAG FIELD: Apply the same tag to multiple images
+  - Enter a tag and click "Apply to All" to add it to all images in workspace
+  - Used with "Tag Folder" to tag external image collections
 
-```
-amalthea/
-├── .git/                # Git repository
-├── images/             # Store your images here
-│   └── .gitkeep        # Keeps the images directory in version control
-├── src/                # Source code
-│   ├── __init__.py     # Initializes the src directory as a Python package
-│   ├── image_loader.py # Handles loading images from the directory
-│   ├── main.py         # Main application entry point
-│   ├── tag_manager.py  # Manages saving and loading tags for images
-│   └── ui/             # User interface components
-│       ├── __init__.py # Initializes the ui directory as a Python package
-│   ├── components.py # Reusable UI components
-│       └── main_window.py # Main GUI window setup
-├── .gitignore          # Specifies intentionally untracked files that Git should ignore
-├── README.md           # Project documentation (this file)
-├── requirements.txt    # Lists project dependencies
-└── run.bat             # Windows batch file for easy startup
-```
+* TAGS INPUT: Add or edit tags for the current image
+  - Enter tags separated by commas
+  - Example: landscape, mountains, sunny
 
-## Contributing
+BUTTONS:
 
-Contributions are welcome! Please feel free to submit a pull request or open an issue for any suggestions or improvements.
+* NAVIGATION BUTTONS:
+  - Previous Image: Move to the previous image in the collection
+  - Next Image: Move to the next image in the collection
 
-## License
+* TAG MANAGEMENT:
+  - Save Tags: Save the current tags to a text file with the same name as the image
+  - Delete Tags: Remove all tags from the current image
 
-This project is licensed under the MIT License. See the `LICENSE` file for more details.
+* FOLDER MANAGEMENT:
+  - Add Folder: Import images from an external folder to the workspace
+    * Copies images into your workspace
+    * Also imports any matching text files with the same filename
+  
+  - Export Dataset: Export all images and their tags to a new location
+    * Creates a "dataset" folder at the selected location
+    * Copies all images and tag files
+    * Optionally clears the workspace after export
+  
+  - Tag Folder: Apply tags to images in an external folder
+    * Does NOT import the images
+    * Creates/updates .txt files in that location
+    * Uses the tag entered in the Auto-Tag field
+  
+  - Clear Folder: Delete all images and tags from the workspace
+    * WARNING: This permanently deletes files
+    * Export your dataset first if you want to keep the data
+
+--------------------------------------------------
+WORKFLOW EXAMPLES
+--------------------------------------------------
+
+BASIC IMAGE TAGGING:
+1. Add images to the "images" folder or use Add Folder to import them
+2. Navigate through images with Previous/Next buttons
+3. Enter tags for each image in the Tags field
+4. Click Save Tags for each image
+
+BATCH TAGGING:
+1. Add images to workspace
+2. Enter a common tag in the Auto-Tag field (e.g., "landscape")
+3. Click "Apply to All" to add this tag to all images
+4. Navigate through images to add individual tags as needed
+
+CREATING A DATASET:
+1. Tag all your images
+2. Click Export Dataset
+3. Choose a destination folder
+4. All images and tags will be copied to a new "dataset" folder
+5. Optionally clear your workspace to start fresh
+
+TAGGING EXTERNAL COLLECTIONS:
+1. Enter a tag in the Auto-Tag field
+2. Click "Tag Folder"
+3. Select a folder containing images
+4. This creates .txt files with tags for each image, without moving them
+
+--------------------------------------------------
+TROUBLESHOOTING
+--------------------------------------------------
+
+ISSUE: Application won't start
+SOLUTION: Make sure Python 3.6+ is installed and in your PATH
+          Run: pip install -r requirements.txt
+
+ISSUE: Images don't load
+SOLUTION: Check if the images folder exists and contains image files
+          Supported formats: PNG, JPG, JPEG, GIF, BMP
+
+ISSUE: Shortcut doesn't work
+SOLUTION: Run create_shortcut.bat again to recreate it
+          Make sure the pythonw.exe path in the shortcut is correct
+
+--------------------------------------------------
+CONTACT & SUPPORT
+--------------------------------------------------
+
+If you encounter issues or have suggestions for improvements,
+please open an issue on the GitHub repository.
+
+Thank you for using Amalthea!
