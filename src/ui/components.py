@@ -153,8 +153,11 @@ class NavigationButton(Button):
         self.bind("<Leave>", self._on_leave)
     
     def _on_enter(self, event):
-        """Mouse enter effect"""
-        self.config(bg="#d1d1d1" if self.cget("bg") == "#e1e1e1" else self.cget("bg").replace("#", "#d"))
+        """Handle mouse enter event with safe color darkening."""
+        current_bg = self.cget("bg")
+        if current_bg == "#e1e1e1":
+            self.config(bg="#d1d1d1")
+        # Skip color modification for custom-colored buttons
     
     def _on_leave(self, event):
         """Mouse leave effect"""

@@ -36,7 +36,7 @@ if not exist images\ (
 
 echo Starting Amalthea...
 set PYTHONPATH=%PYTHONPATH%;%CD%
-pythonw src\main.py
+python src\main.py
 if %ERRORLEVEL% NEQ 0 (
     echo.
     echo Error running Amalthea. 
